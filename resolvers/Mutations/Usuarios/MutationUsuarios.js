@@ -4,6 +4,7 @@ const { validarIdUsuarios } = require("../../../data/validacoes/validarID")
 
 const perfilDefault = 1;
 const statuDefault = 'ATIVO'
+let indice;
 
 // pode usar  a o operador expred .... usando o args
 // ... args espalha todos os atributos que vem nos argumentos 
@@ -29,34 +30,45 @@ module.exports = {
     },
     excluirUsuario(_, { filtro }) {
         const { id, email } = filtro
-        console.log("id == " + id);
+        if (id) {
+            indice = validarIdUsuarios(id)
+        } else if (email) {
+            indice = validarEmailExistnte(email)
+        } else {
+            throw new Error("Id ou Email deve ser fornecido para alterar o usuário.");
+        }
+        if (indice === undefined) {
+            throw new Error("Usuário não encontrado.");
+        }
+        const excluido = usuarios.splice(indice, 1)
+        return excluido ? excluido[0] : null
+
+    },
+    alterarUsuario(_, { args, filtro }) {
+
+        const { id, email } = filtro
+        console.log("id-alteração ===>" + id);
 
         if (id) {
-            const indiceID = validarIdUsuarios(id)
-            const excluido = usuarios.splice(indiceID, 1)
-            return excluido ? excluido[0] : null
+            indice = validarIdUsuarios(id)
+
         } else if (email) {
-            indiceEmail = validarEmailExistnte(email)
-            const excluido = usuarios.splice(indiceEmail, 1)
-            return excluido ? excluido[0] : nul
+            indice = validarEmailExistnte(email)
         } else {
-            throw new error("Id e Email não Encontrado");
+            throw new Error("Id ou Email deve ser fornecido para alterar o usuário.");
         }
-        // const excluido = usuarios.splice(validarIdUsuarios, 1)
-        // return excluido ? excluido[0] : null
-    },
-    alterarUsuario(_, args) {
-        const indice = validarIdUsuarios(args.id) // Obter o índice do usuário
 
-        // Atualiza o usuário no índice encontrado com os novos dados
+        if (indice === undefined) {
+            throw new Error("Usuário não encontrado.");
+        }
+
         const usuarioAlterado = {
-            ...usuarios[indice], // Mantém os dados existentes
-            ...args // Substitui pelos novos dados
+            ...usuarios[indice],
+            ...args,
         }
-
-        // Substitui o usuário antigo pelo atualizado
         usuarios.splice(indice, 1, usuarioAlterado)
         return usuarioAlterado
+
     }
 }
 
